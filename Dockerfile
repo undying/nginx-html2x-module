@@ -6,6 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV mod_pdf_path=/opt/mod_pdf
 
 ENV deps_build="\
+  gdb \
   wget \
   build-essential \
   "
@@ -65,13 +66,14 @@ RUN set -x \
 
 RUN mkdir -p ${mod_pdf_path}
 COPY config ${mod_pdf_path}/
+COPY html ${mod_pdf_path}/html
 COPY lib ${mod_pdf_path}/lib
 COPY src ${mod_pdf_path}/src
 
 RUN set -x \
   && cd ${mod_pdf_path}/src \
   && gcc  \ 
-    -Wall -ansi -pedantic -ggdb \
+    -Wall -ansi -pedantic -ggdb -g \
     html_to_pdf.c \
     -o html_to_pdf \
     -lwkhtmltox \
