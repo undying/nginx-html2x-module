@@ -80,9 +80,6 @@ RUN set -x \
     -Wl,-rpath,/usr/local/lib
 
 RUN set -x \
-  && false
-
-RUN set -x \
   && echo "building nginx" \
   && export CPU_COUNT=$(grep -c processor /proc/cpuinfo) \
   && cd /opt/nginx-${nginx_v} \

@@ -1,22 +1,19 @@
 
 ngx_addon_name=ngx_http_pdf_module
 
-PDF_SRC=" \
+PDF_INCS=""
+PDF_SRC="\
   ${ngx_addon_dir}/src/ngx_http_pdf_wkhtmltopdf.c \
   ${ngx_addon_dir}/src/ngx_http_pdf_module.c \
 "
-PDF_DEPS=" \
-  ${ngx_addon_dir}/src/ngx_http_pdf_wkhtmltopdf.h \
-"
-PDF_LIBS=" \
-  -lwkhtmltox \
-"
+PDF_DEPS="${ngx_addon_dir}/src/ngx_http_pdf_wkhtmltopdf.h"
+PDF_LIBS="-lwkhtmltox"
 
 
-ngx_module_incs="${PDF_INCLUDE}"
+ngx_module_incs="${PDF_INCS}"
 ngx_module_libs="${PDF_LIBS}"
 
-if [[ -n "${ngx_module_link}" ]];then
+if [ -n "${ngx_module_link}" ];then
   ngx_module_type=HTTP
   ngx_module_name=${ngx_addon_name}
   ngx_module_srcs="${PDF_SRC}"

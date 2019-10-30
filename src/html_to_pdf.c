@@ -65,12 +65,9 @@ int main(int argc, char **argv){
   fwrite(pdf, 1, size, f);
   fclose(f);
 
-wk_free:
-
   wkhtmltopdf_destroy_converter(wk_c);
   wkhtmltopdf_deinit();
 
-free:
   free(html);
 
   return 0;

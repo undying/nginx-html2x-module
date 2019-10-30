@@ -3,13 +3,14 @@
 #include <ngx_core.h>
 #include <ngx_http.h>
 
+#include "ngx_http_pdf_wkhtmltopdf.h"
+
 
 typedef struct {
   ngx_flag_t enable;
 } ngx_http_pdf_loc_conf_t;
 
-//static const char ngx_http_pdf_content_type[] = "application/pdf";
-static const char ngx_http_pdf_content_type[] = "text/html";
+static const char ngx_http_pdf_content_type[] = "application/pdf";
 
 static char * ngx_http_pdf(ngx_conf_t *ngx_conf, ngx_command_t *ngx_command, void *conf);
 
@@ -67,7 +68,26 @@ ngx_module_t ngx_http_pdf_module = {
 
 
 static ngx_int_t
-ngx_http_pdf_handler(ngx_http_request_t *r){
+ngx_http_pdf_handler(ngx_http_request_t *r)
+{
+  ngx_int_t rc;
+
+  if(r->method & (NGX_HTTP_HEAD|NGX_HTTP_GET)){
+    //TODO: generate documentation on GET
+    return NGX_HTTP_NOT_ALLOWED;
+  }
+
+  rc = ngx_http_read_client_request_body(r, ngx_http_pdf_request_body);
+  if(rc >= NGX_HTTP_SPECIAL_RESPONSE){
+    return rc;
+  }
+
+  return NGX_DONE;
+}
+
+/*
+static ngx_int_t
+ngx_http_pdf_handler2(ngx_http_request_t *r){
   const char * test_response = "fuck yeah";
   ngx_int_t rc;
 
@@ -103,30 +123,107 @@ ngx_http_pdf_handler(ngx_http_request_t *r){
     return rc;
   }
 
-  /*
-  b = ngx_calloc_buf(r->pool);
-  if(!b){
-    ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "Failed to allocate response buffer.");
-    return NGX_HTTP_INTERNAL_SERVER_ERROR;
+  //b = ngx_calloc_buf(r->pool);
+  //if(!b){
+  //  ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "Failed to allocate response buffer.");
+  //  return NGX_HTTP_INTERNAL_SERVER_ERROR;
+  //}
+
+  //b->pos = (u_char *)test_response;
+  //b->last = b->pos + ngx_strlen(test_response);
+
+  //b->last_buf = (r == r->main) ? 1 : 0;
+  //b->last_in_chain = 1;
+  //b->memory = 1;
+
+  //out.buf = b;
+  //out.next = NULL;
+
+  //return ngx_http_output_filter(r, &out);
+
+  return NGX_DONE;
+}
+*/
+
+
+static void ngx_http_pdf_request_body(ngx_http_request_t *r)
+{
+  int rc;
+  ngx_buf_t *b, *fb;
+  ngx_chain_t *in, out;
+
+  pdf_conf_t pdf_conf;
+
+  if(!r->request_body){
+    ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+        "HTML body not passed");
+    ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
+    return;
   }
 
-  b->pos = (u_char *)test_response;
-  b->last = b->pos + ngx_strlen(test_response);
+  pdf_init(&pdf_conf);
 
-  b->last_buf = (r == r->main) ? 1 : 0;
-  b->last_in_chain = 1;
+  fb = ngx_calloc_buf(r->pool);
+  if(!fb){
+    ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0,
+        "unable to allocate file buffer");
+    ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
+    return;
+  }
+
+  for(in = r->request_body->bufs; in; in = in->next){
+    if(ngx_buf_in_memory(in->buf)){
+      pdf_object_add(&pdf_conf, (char *)in->buf->start);
+    } else if(in->buf->in_file){
+      fb->start = ngx_palloc(r->pool, in->buf->file_last); /*TODO: maybe it's possible to reuse buffers instead of new alloc*/
+      ngx_read_file(in->buf->file, fb->start, in->buf->file_last, in->buf->file_pos);
+      pdf_object_add(&pdf_conf, (char *)fb->start);
+    }
+  }
+
+  b = ngx_calloc_buf(r->pool);
+  if(!b){
+    ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0,
+        "unable to allocate buffer");
+    ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
+    return;
+  }
+
+  rc = pdf_convert(&pdf_conf, &b->pos);
+  if(rc < 1){
+    ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+        "unable to convert HTML to PDF");
+    ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
+    return;
+  }
+
+  b->last = b->pos + rc;
+
   b->memory = 1;
+  b->last_buf = 1;
 
   out.buf = b;
   out.next = NULL;
 
-  return ngx_http_output_filter(r, &out);
-  */
+  r->headers_out.status = NGX_HTTP_OK;
+  r->headers_out.content_length_n = rc;
+  r->headers_out.content_type.len = ngx_strlen(ngx_http_pdf_content_type);
+  r->headers_out.content_type.data = (u_char *)ngx_http_pdf_content_type;
 
-  return NGX_DONE;
+  rc = ngx_http_send_header(r);
+  if(rc == NGX_ERROR || rc > NGX_OK || r->header_only){
+    ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
+    return;
+  }
+
+  rc = ngx_http_output_filter(r, &out);
+
+  pdf_deinit(&pdf_conf);
+  ngx_http_finalize_request(r, rc);
 }
 
 
+/*
 static void ngx_http_pdf_request_body(ngx_http_request_t *r)
 {
   off_t len = 0;
@@ -168,6 +265,7 @@ static void ngx_http_pdf_request_body(ngx_http_request_t *r)
   rc = ngx_http_output_filter(r, &out);
   ngx_http_finalize_request(r, rc);
 }
+*/
 
 
 static char * ngx_http_pdf(ngx_conf_t *ngx_conf, ngx_command_t *ngx_command, void *conf){
@@ -204,13 +302,13 @@ static ngx_int_t ngx_http_pdf_postconf(ngx_conf_t *ngx_conf)
 static void * ngx_http_pdf_create_loc_conf(ngx_conf_t *ngx_conf)
 {
   ngx_http_pdf_loc_conf_t *pdf_loc_conf;
+
   pdf_loc_conf = ngx_pcalloc(ngx_conf->pool, sizeof(ngx_http_pdf_loc_conf_t));
   if(!pdf_loc_conf){
     return NGX_CONF_ERROR;
   }
 
   pdf_loc_conf->enable = NGX_CONF_UNSET;
-
   return pdf_loc_conf;
 }
 
