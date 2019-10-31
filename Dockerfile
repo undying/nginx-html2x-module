@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV mod_pdf_path=/opt/mod_pdf
 
 ENV deps_build="\
-  gdb \
+  gdb valgrind \
   wget \
   build-essential \
   "

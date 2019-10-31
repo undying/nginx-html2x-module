@@ -16,13 +16,15 @@ static char * ngx_http_pdf(ngx_conf_t *ngx_conf, ngx_command_t *ngx_command, voi
 
 static ngx_int_t ngx_http_pdf_preconf(ngx_conf_t *ngx_conf);
 static ngx_int_t ngx_http_pdf_postconf(ngx_conf_t *ngx_conf);
+static ngx_int_t ngx_http_pdf_init(ngx_cycle_t *ngx_cycle);
+
+static void ngx_http_pdf_deinit(ngx_cycle_t *ngx_cycle);
 
 static void * ngx_http_pdf_create_loc_conf(ngx_conf_t *ngx_conf);
 static char * ngx_http_pdf_merge_loc_conf(ngx_conf_t *ngx_conf, void *parent, void *child);
 
 static ngx_int_t ngx_http_pdf_handler(ngx_http_request_t *r);
 static void ngx_http_pdf_request_body(ngx_http_request_t *r);
-//static ngx_int_t ngx_http_pdf_init(ngx_http_pdf_loc_conf_t *pdf_loc_conf);
 
 
 static ngx_command_t ngx_http_pdf_commands[] = {
@@ -57,14 +59,29 @@ ngx_module_t ngx_http_pdf_module = {
   ngx_http_pdf_commands,	       /* module directives */
   NGX_HTTP_MODULE,               /* module type */
   NULL,                          /* init master */
-  NULL,                          /* init module */
+  ngx_http_pdf_init,	           /* init module */
   NULL,                          /* init process */
   NULL,                          /* init thread */
   NULL,                          /* exit thread */
   NULL,                          /* exit process */
-  NULL,                          /* exit master */
+  ngx_http_pdf_deinit,	         /* exit master */
   NGX_MODULE_V1_PADDING
 };
+
+
+static ngx_int_t
+ngx_http_pdf_init(ngx_cycle_t *ngx_cycle)
+{
+  pdf_init();
+  return NGX_OK;
+}
+
+
+static void
+ngx_http_pdf_deinit(ngx_cycle_t *ngx_cycle)
+{
+  pdf_deinit();
+}
 
 
 static ngx_int_t
@@ -161,7 +178,7 @@ static void ngx_http_pdf_request_body(ngx_http_request_t *r)
     return;
   }
 
-  pdf_init(&pdf_conf);
+  pdf_conf_init(&pdf_conf);
 
   fb = ngx_calloc_buf(r->pool);
   if(!fb){
@@ -175,7 +192,7 @@ static void ngx_http_pdf_request_body(ngx_http_request_t *r)
     if(ngx_buf_in_memory(in->buf)){
       pdf_object_add(&pdf_conf, (char *)in->buf->start);
     } else if(in->buf->in_file){
-      fb->start = ngx_palloc(r->pool, in->buf->file_last); /*TODO: maybe it's possible to reuse buffers instead of new alloc*/
+      fb->start = ngx_palloc(r->pool, in->buf->file_last);
       ngx_read_file(in->buf->file, fb->start, in->buf->file_last, in->buf->file_pos);
       pdf_object_add(&pdf_conf, (char *)fb->start);
     }
@@ -218,7 +235,7 @@ static void ngx_http_pdf_request_body(ngx_http_request_t *r)
 
   rc = ngx_http_output_filter(r, &out);
 
-  pdf_deinit(&pdf_conf);
+  pdf_conf_deinit(&pdf_conf);
   ngx_http_finalize_request(r, rc);
 }
 
@@ -291,12 +308,6 @@ static ngx_int_t ngx_http_pdf_postconf(ngx_conf_t *ngx_conf)
 {
   return 0;
 }
-
-
-//static ngx_int_t ngx_http_pdf_init(ngx_http_pdf_loc_conf_t *pdf_loc_conf)
-//{
-//  return 0;
-//}
 
 
 static void * ngx_http_pdf_create_loc_conf(ngx_conf_t *ngx_conf)

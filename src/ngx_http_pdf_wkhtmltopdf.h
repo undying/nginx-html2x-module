@@ -14,8 +14,11 @@ typedef struct {
 } pdf_conf_t;
 
 
-void pdf_init(pdf_conf_t * pdf_conf);
-void pdf_deinit(pdf_conf_t * pdf_conf);
+void pdf_init(void);
+void pdf_deinit(void);
+
+void pdf_conf_init(pdf_conf_t *pdf_conf);
+void pdf_conf_deinit(pdf_conf_t *pdf_conf);
 
 void pdf_object_add(pdf_conf_t *pdf_conf, char *html);
 int pdf_convert(pdf_conf_t *pdf_conf, unsigned char **pdf);

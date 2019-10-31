@@ -3,13 +3,29 @@
 #include "stddef.h"
 
 
-void pdf_init(pdf_conf_t * pdf_conf)
+void pdf_init(void)
 {
   wkhtmltopdf_init(WKHTMLTOX_USE_GRAPHICS);
+}
 
+
+void pdf_deinit(){
+  wkhtmltopdf_deinit();
+}
+
+
+void pdf_conf_init(pdf_conf_t *pdf_conf)
+{
   pdf_conf->wk_gs = wkhtmltopdf_create_global_settings();
   pdf_conf->wk_os = wkhtmltopdf_create_object_settings();
   pdf_conf->wk_c = wkhtmltopdf_create_converter(pdf_conf->wk_gs);
+}
+
+
+void pdf_conf_deinit(pdf_conf_t *pdf_conf){
+  wkhtmltopdf_destroy_object_settings(pdf_conf->wk_os);
+  wkhtmltopdf_destroy_global_settings(pdf_conf->wk_gs);
+  wkhtmltopdf_destroy_converter(pdf_conf->wk_c);
 }
 
 
@@ -33,9 +49,4 @@ int pdf_convert(pdf_conf_t *pdf_conf, unsigned char **pdf){
   return rc;
 }
 
-
-void pdf_deinit(pdf_conf_t * pdf_conf){
-  wkhtmltopdf_destroy_converter(pdf_conf->wk_c);
-  wkhtmltopdf_deinit();
-}
 
