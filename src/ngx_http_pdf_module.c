@@ -59,12 +59,12 @@ ngx_module_t ngx_http_pdf_module = {
   ngx_http_pdf_commands,	       /* module directives */
   NGX_HTTP_MODULE,               /* module type */
   NULL,                          /* init master */
-  ngx_http_pdf_init,	           /* init module */
-  NULL,                          /* init process */
+  NULL,	                         /* init module */
+  ngx_http_pdf_init,	           /* init process */
   NULL,                          /* init thread */
   NULL,                          /* exit thread */
-  NULL,                          /* exit process */
-  ngx_http_pdf_deinit,	         /* exit master */
+  ngx_http_pdf_deinit,	         /* exit process */
+  NULL,	                         /* exit master */
   NGX_MODULE_V1_PADDING
 };
 
@@ -166,8 +166,9 @@ ngx_http_pdf_handler2(ngx_http_request_t *r){
 static void ngx_http_pdf_request_body(ngx_http_request_t *r)
 {
   int rc;
-  ngx_buf_t *b, *fb;
+  ngx_buf_t *b;
   ngx_chain_t *in, out;
+  unsigned char *bb = NULL;
 
   pdf_conf_t pdf_conf;
 
@@ -180,21 +181,21 @@ static void ngx_http_pdf_request_body(ngx_http_request_t *r)
 
   pdf_conf_init(&pdf_conf);
 
-  fb = ngx_calloc_buf(r->pool);
-  if(!fb){
-    ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0,
-        "unable to allocate file buffer");
-    ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
-    return;
-  }
-
   for(in = r->request_body->bufs; in; in = in->next){
     if(ngx_buf_in_memory(in->buf)){
-      pdf_object_add(&pdf_conf, (char *)in->buf->start);
+      rc = (in->buf->last - in->buf->pos) + 1;
+      bb = ngx_palloc(r->pool, rc);
+      ngx_cpystrn(bb, in->buf->pos, rc);
+
+      pdf_object_add(&pdf_conf, (char *)bb);
     } else if(in->buf->in_file){
-      fb->start = ngx_palloc(r->pool, in->buf->file_last);
-      ngx_read_file(in->buf->file, fb->start, in->buf->file_last, in->buf->file_pos);
-      pdf_object_add(&pdf_conf, (char *)fb->start);
+      rc = in->buf->file_last + 1;
+      bb = ngx_palloc(r->pool, rc);
+
+      ngx_read_file(in->buf->file, bb, in->buf->file_last, in->buf->file_pos);
+      bb[in->buf->file_last] = '\0';
+
+      pdf_object_add(&pdf_conf, (char *)bb);
     }
   }
 

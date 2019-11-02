@@ -80,6 +80,15 @@ RUN set -x \
     -Wl,-rpath,/usr/local/lib
 
 RUN set -x \
+  && cd ${mod_pdf_path}/src \
+  && gcc  \ 
+    -Wall --std=c11 -pedantic -ggdb -g \
+    html_to_pdf_test.c \
+    -o html_to_pdf_test \
+    -lwkhtmltox \
+    -Wl,-rpath,/usr/local/lib
+
+RUN set -x \
   && echo "building nginx" \
   && export CPU_COUNT=$(grep -c processor /proc/cpuinfo) \
   && cd /opt/nginx-${nginx_v} \
@@ -102,7 +111,7 @@ RUN set -x \
     \
     --user=nginx --group=nginx \
     \
-    --with-cc-opt="-O3 -g" \
+    --with-cc-opt="-O0 -g -ggdb" \
     \
     --with-threads \
     --with-pcre-jit \

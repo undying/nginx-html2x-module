@@ -30,3 +30,12 @@ docker_logs:
 
 gdb:
 	docker exec -it $(DOCKER_NAME) bash -c 'gdb --pid $$(pgrep -f worker)'
+
+html_to_pdf_test: src/html_to_pdf_test.c
+	gcc \
+    -Wall --std=c11 -pedantic -ggdb -g \
+    src/html_to_pdf_test.c \
+    -o html_to_pdf_test \
+    -lwkhtmltox \
+    -Wl,-rpath,/usr/local/lib
+
