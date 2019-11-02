@@ -8,6 +8,7 @@
 
 typedef struct {
   ngx_flag_t enable;
+  pdf_global_conf_t *pdf_global_conf;
 } ngx_http_pdf_loc_conf_t;
 
 static const char ngx_http_pdf_content_type[] = "application/pdf";
@@ -170,6 +171,7 @@ static void ngx_http_pdf_request_body(ngx_http_request_t *r)
   ngx_chain_t *in, out;
   unsigned char *bb = NULL;
 
+  ngx_http_pdf_loc_conf_t *pdf_loc_conf;
   pdf_conf_t pdf_conf;
 
   if(!r->request_body){
@@ -179,7 +181,8 @@ static void ngx_http_pdf_request_body(ngx_http_request_t *r)
     return;
   }
 
-  pdf_conf_init(&pdf_conf);
+  pdf_loc_conf = ngx_http_get_module_loc_conf(r, ngx_http_pdf_module);
+  pdf_conf_init(pdf_loc_conf->pdf_global_conf, &pdf_conf);
 
   for(in = r->request_body->bufs; in; in = in->next){
     if(ngx_buf_in_memory(in->buf)){
@@ -216,7 +219,6 @@ static void ngx_http_pdf_request_body(ngx_http_request_t *r)
   }
 
   b->last = b->pos + rc;
-
   b->memory = 1;
   b->last_buf = 1;
 
@@ -319,7 +321,12 @@ static void * ngx_http_pdf_create_loc_conf(ngx_conf_t *ngx_conf)
   if(!pdf_loc_conf){
     return NGX_CONF_ERROR;
   }
+  pdf_loc_conf->pdf_global_conf = ngx_pcalloc(ngx_conf->pool, sizeof(pdf_global_conf_t));
+  if(!pdf_loc_conf->pdf_global_conf){
+    return NGX_CONF_ERROR;
+  }
 
+  pdf_global_conf_init(pdf_loc_conf->pdf_global_conf);
   pdf_loc_conf->enable = NGX_CONF_UNSET;
   return pdf_loc_conf;
 }

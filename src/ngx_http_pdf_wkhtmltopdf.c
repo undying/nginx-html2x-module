@@ -14,17 +14,20 @@ void pdf_deinit(){
 }
 
 
-void pdf_conf_init(pdf_conf_t *pdf_conf)
+void pdf_conf_init(pdf_global_conf_t *pdf_global_conf, pdf_conf_t *pdf_conf)
 {
-  pdf_conf->wk_gs = wkhtmltopdf_create_global_settings();
   pdf_conf->wk_os = wkhtmltopdf_create_object_settings();
-  pdf_conf->wk_c = wkhtmltopdf_create_converter(pdf_conf->wk_gs);
+  pdf_conf->wk_c = wkhtmltopdf_create_converter(pdf_global_conf->wk_gs);
+}
+
+
+void pdf_global_conf_init(pdf_global_conf_t *pdf_global_conf){
+  pdf_global_conf->wk_gs = wkhtmltopdf_create_global_settings();
 }
 
 
 void pdf_conf_deinit(pdf_conf_t *pdf_conf){
   wkhtmltopdf_destroy_object_settings(pdf_conf->wk_os);
-  wkhtmltopdf_destroy_global_settings(pdf_conf->wk_gs);
   wkhtmltopdf_destroy_converter(pdf_conf->wk_c);
 }
 
