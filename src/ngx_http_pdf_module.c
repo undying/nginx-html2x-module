@@ -243,51 +243,6 @@ static void ngx_http_pdf_request_body(ngx_http_request_t *r)
 }
 
 
-/*
-static void ngx_http_pdf_request_body(ngx_http_request_t *r)
-{
-  off_t len = 0;
-  ngx_buf_t *b;
-  ngx_int_t rc;
-  ngx_chain_t *in, out;
-
-  if(!(r->request_body)){
-    ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
-    return;
-  }
-
-  for(in = r->request_body->bufs; in; in = in->next){
-    len += ngx_buf_size(in->buf);
-  }
-
-  b = ngx_create_temp_buf(r->pool, NGX_OFF_T_LEN);
-  if(!b){
-    ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
-    return;
-  }
-
-  b->last = ngx_sprintf(b->pos, "%0", len);
-  b->last_buf = (r == r->main) ? 1 : 0;
-  b->last_in_chain = 1;
-
-  r->headers_out.status = NGX_HTTP_OK;
-  r->headers_out.content_length_n = b->last - b->pos;
-
-  rc = ngx_http_send_header(r);
-  if(rc == NGX_ERROR || rc > NGX_OK || r->header_only){
-    ngx_http_finalize_request(r, rc);
-    return;
-  }
-
-  out.buf = b;
-  out.next = NULL;
-
-  rc = ngx_http_output_filter(r, &out);
-  ngx_http_finalize_request(r, rc);
-}
-*/
-
-
 static char * ngx_http_pdf(ngx_conf_t *ngx_conf, ngx_command_t *ngx_command, void *conf){
   ngx_http_core_loc_conf_t *ngx_core_loc_conf;
   ngx_http_pdf_loc_conf_t *pdf_loc_conf = conf;
