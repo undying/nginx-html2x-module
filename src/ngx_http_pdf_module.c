@@ -2,6 +2,7 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
+#include <ngx_thread_pool.h>
 
 #include "ngx_http_pdf_wkhtmltopdf.h"
 
@@ -9,6 +10,7 @@
 typedef struct {
   ngx_flag_t enable;
   pdf_global_conf_t *pdf_global_conf;
+  ngx_thread_pool_t *thread_pool;
 } ngx_http_pdf_loc_conf_t;
 
 static const char ngx_http_pdf_content_type[] = "application/pdf";
@@ -102,66 +104,6 @@ ngx_http_pdf_handler(ngx_http_request_t *r)
 
   return NGX_DONE;
 }
-
-/*
-static ngx_int_t
-ngx_http_pdf_handler2(ngx_http_request_t *r){
-  const char * test_response = "fuck yeah";
-  ngx_int_t rc;
-
-  //ngx_buf_t *b;
-  //ngx_chain_t out;
-
-  //ngx_http_pdf_loc_conf_t *pdf_loc_conf;
-  //pdf_loc_conf = ngx_http_get_module_loc_conf(r, ngx_http_pdf_module);
-
-  if(!(r->method & (NGX_HTTP_GET|NGX_HTTP_HEAD))){
-    // TODO: allow only POST
-    return NGX_HTTP_NOT_ALLOWED;
-  }
-
-  r->headers_out.content_type.len = ngx_strlen(ngx_http_pdf_content_type);
-  r->headers_out.content_type.data = (u_char *)ngx_http_pdf_content_type;
-
-  r->headers_out.status = NGX_HTTP_OK;
-  r->headers_out.content_length_n = ngx_strlen(test_response);
-
-  rc = ngx_http_send_header(r);
-  if(rc == NGX_ERROR || rc > NGX_OK || r->header_only){
-    return rc;
-  }
-
-  // TODO: use ngx_http_read_client_request_body() to read body
-  //rc = ngx_http_discard_request_body(r);
-  //if(rc != NGX_OK && rc != NGX_AGAIN){
-  //  return rc;
-  //}
-  rc = ngx_http_read_client_request_body(r, ngx_http_pdf_request_body);
-  if(rc > NGX_HTTP_SPECIAL_RESPONSE){
-    return rc;
-  }
-
-  //b = ngx_calloc_buf(r->pool);
-  //if(!b){
-  //  ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "Failed to allocate response buffer.");
-  //  return NGX_HTTP_INTERNAL_SERVER_ERROR;
-  //}
-
-  //b->pos = (u_char *)test_response;
-  //b->last = b->pos + ngx_strlen(test_response);
-
-  //b->last_buf = (r == r->main) ? 1 : 0;
-  //b->last_in_chain = 1;
-  //b->memory = 1;
-
-  //out.buf = b;
-  //out.next = NULL;
-
-  //return ngx_http_output_filter(r, &out);
-
-  return NGX_DONE;
-}
-*/
 
 
 static void ngx_http_pdf_request_body(ngx_http_request_t *r)
