@@ -31,6 +31,9 @@ docker_logs:
 gdb:
 	docker exec -it $(DOCKER_NAME) bash -c 'gdb --pid $$(pgrep -f worker)'
 
+gdb_bt:
+	docker exec -it $(DOCKER_NAME) bash -c 'gdb --pid $$(pgrep -f worker) -ex "thread apply all bt"'
+
 html_to_pdf_test: src/html_to_pdf_test.c
 	gcc \
     -Wall --std=c11 -pedantic -ggdb -g \
