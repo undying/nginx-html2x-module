@@ -3,7 +3,7 @@ server {
   listen 80;
 
   location / {
-    pdf;
+    html2pdf;
   }
 }
 

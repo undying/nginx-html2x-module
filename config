@@ -1,29 +1,29 @@
 
-ngx_addon_name=ngx_http_pdf_module
+ngx_addon_name=ngx_http_html2x_module
 
-PDF_INCS=""
-PDF_SRC="\
-  ${ngx_addon_dir}/src/ngx_http_pdf_wkhtmltopdf.c \
-  ${ngx_addon_dir}/src/ngx_http_pdf_module.c \
+HTML2X_INCS=""
+HTML2X_SRC="\
+  ${ngx_addon_dir}/src/ngx_http_html2pdf_wkhtmltopdf.c \
+  ${ngx_addon_dir}/src/ngx_http_html2x_module.c \
 "
-PDF_DEPS="${ngx_addon_dir}/src/ngx_http_pdf_wkhtmltopdf.h"
-PDF_LIBS="-lwkhtmltox"
+HTML2X_DEPS="${ngx_addon_dir}/src/ngx_http_html2pdf_wkhtmltopdf.h"
+HTML2X_LIBS="-lwkhtmltox"
 
 
-ngx_module_incs="${PDF_INCS}"
-ngx_module_libs="${PDF_LIBS}"
+ngx_module_incs="${HTML2X_INCS}"
+ngx_module_libs="${HTML2X_LIBS}"
 
 if [ -n "${ngx_module_link}" ];then
   ngx_module_type=HTTP
   ngx_module_name=${ngx_addon_name}
-  ngx_module_srcs="${PDF_SRC}"
-  ngx_module_deps="${PDF_DEPS}"
+  ngx_module_srcs="${HTML2X_SRC}"
+  ngx_module_deps="${HTML2X_DEPS}"
 
   . auto/module
 else
   HTTP_MODULES="${HTTP_MODULES} ${ngx_addon_name}"
-  NGX_ADDON_SRCS="${NGX_ADDON_SRCS} ${PDF_SRC}"
-  NGX_ADDON_DEPS="${NGX_ADDON_DEPS} ${PDF_DEPS}"
+  NGX_ADDON_SRCS="${NGX_ADDON_SRCS} ${HTML2X_SRC}"
+  NGX_ADDON_DEPS="${NGX_ADDON_DEPS} ${HTML2X_DEPS}"
 fi
 
 # vi:syntax=sh
