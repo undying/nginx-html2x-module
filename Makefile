@@ -1,5 +1,5 @@
 
-DOCKER_NAME=pdf
+DOCKER_NAME=html2x
 
 docker_run: docker_build docker_stop docker_clean
 	docker run \
@@ -23,7 +23,7 @@ docker_exec:
 
 request:
 	rm -f /tmp/test.pdf
-	curl -o /tmp/test.pdf -vd "@html/nginx news.htm" -H 'Content-Type: text/html' 127.0.0.1
+	curl -o /tmp/test.pdf -vd "@html/nginx news.htm" -H 'Content-Type: text/html' 127.0.0.1/html2pdf
 
 docker_logs:
 	docker exec -it $(DOCKER_NAME) tail -F /var/log/nginx/error.log
