@@ -6,16 +6,11 @@
 
 #include "ngx_http_html2pdf_wkhtmltopdf.h"
 
-/* deprecated */
 typedef struct {
   ngx_flag_t enable;
   html2pdf_global_conf_t *html2pdf_global_conf;
-  ngx_thread_pool_t *thread_pool;
 } ngx_http_html2x_loc_conf_t;
 
-typedef struct {
-  ngx_flag_t enable;
-} ngx_http_html2pdf_loc_conf_t;
 
 static const char ngx_http_pdf_content_type[] = "application/pdf";
 static char * ngx_http_html2pdf(ngx_conf_t *ngx_conf, ngx_command_t *ngx_command, void *conf);
@@ -98,6 +93,8 @@ ngx_http_html2pdf_handler(ngx_http_request_t *r)
 
   rc = ngx_http_read_client_request_body(r, ngx_http_pdf_request_body);
   if(rc >= NGX_HTTP_SPECIAL_RESPONSE){
+    ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+        "Unable to read request body");
     return rc;
   }
 
@@ -130,26 +127,28 @@ ngx_http_pdf_request_body(ngx_http_request_t *r)
     if(ngx_buf_in_memory(in->buf)){
       rc = (in->buf->last - in->buf->pos) + 1;
       bb = ngx_palloc(r->pool, rc);
-      ngx_cpystrn(bb, in->buf->pos, rc);
+      if(!bb){
+        goto alloc_error;
+      }
 
-      pdf_object_add(&html2pdf_conf, (char *)bb);
+      ngx_cpystrn(bb, in->buf->pos, rc);
     } else if(in->buf->in_file){
       rc = in->buf->file_last + 1;
       bb = ngx_palloc(r->pool, rc);
+      if(!bb){
+        goto alloc_error;
+      }
 
       ngx_read_file(in->buf->file, bb, in->buf->file_last, in->buf->file_pos);
       bb[in->buf->file_last] = '\0';
-
-      pdf_object_add(&html2pdf_conf, (char *)bb);
     }
+
+    pdf_object_add(&html2pdf_conf, (char *)bb);
   }
 
   b = ngx_calloc_buf(r->pool);
   if(!b){
-    ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0,
-        "unable to allocate buffer");
-    ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
-    return;
+    goto alloc_error;
   }
 
   rc = pdf_convert(&html2pdf_conf, &b->pos);
@@ -181,6 +180,13 @@ ngx_http_pdf_request_body(ngx_http_request_t *r)
   rc = ngx_http_output_filter(r, &out);
   ngx_http_finalize_request(r, rc);
   pdf_conf_deinit(&html2pdf_conf);
+
+  return;
+
+alloc_error:
+  ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0,
+      "Unable to allocate buffer");
+  ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
 }
 
 
