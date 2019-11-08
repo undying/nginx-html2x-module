@@ -4,7 +4,7 @@
 **Designed to generate PDF from HTML**
 
 *Example:*
-```
+```sh
 curl \
   -o /tmp/hello.pdf \
   -vd "<html><body>Hello!</body></html>" \
@@ -30,7 +30,7 @@ Service will be available as `http://127.0.0.1/html2pdf`
 
 ###### Wkhtmltox Dependencies
 
-```
+```sh
 apt-get install -y \
   fontconfig \
   libfreetype6 \
@@ -46,7 +46,7 @@ apt-get install -y \
 
 ###### Wkhtmltox Library
 
-```
+```sh
 export CODENAME=$(awk -F'=' '/CODENAME/ {print $2;exit}' /etc/os-release)
 
 wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${CODENAME}_amd64.deb
@@ -56,7 +56,7 @@ dpkg -i wkhtmltox_0.12.5-1.${CODENAME}_amd64.deb
 
 ###### Build Nginx
 
-```
+```sh
 export nginx_v=1.16.1
 export CPU_COUNT=$(grep -c processor /proc/cpuinfo)
 
