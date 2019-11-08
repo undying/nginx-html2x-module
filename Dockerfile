@@ -66,7 +66,6 @@ RUN set -x \
 
 RUN mkdir -p ${mod_pdf_path}
 COPY config ${mod_pdf_path}/
-COPY html ${mod_pdf_path}/html
 COPY lib ${mod_pdf_path}/lib
 COPY src ${mod_pdf_path}/src
 
