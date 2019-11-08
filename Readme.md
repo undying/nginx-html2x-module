@@ -1,5 +1,5 @@
 
-#html2x Nginx module
+# html2x Nginx module
 
 **Designed to generate PDF from HTML**
 
@@ -12,23 +12,23 @@ curl \
   127.0.0.1/html2pdf
 ```
 
-###How To
+### How To
 
-####Docker
+#### Docker
 
 If you have Docker, you can run `make`.
 Docker will build and start container.
 Service will be available as `http://127.0.0.1/html2pdf`
 
-####Module Compilation
+#### Module Compilation
 
-#####Install Requirements
+##### Install Requirements
 
-######Build Tools
+###### Build Tools
 
 `apt-get install -y wget build-essential`
 
-######Wkhtmltox Dependencies
+###### Wkhtmltox Dependencies
 
 ```
 apt-get install -y \
@@ -44,7 +44,7 @@ apt-get install -y \
   xfonts-base
 ```
 
-######Wkhtmltox Library
+###### Wkhtmltox Library
 
 ```
 export CODENAME=$(awk -F'=' '/CODENAME/ {print $2;exit}' /etc/os-release)
@@ -54,7 +54,7 @@ wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmlt
 dpkg -i wkhtmltox_0.12.5-1.${CODENAME}_amd64.deb
 ```
 
-######Build Nginx
+###### Build Nginx
 
 ```
 export nginx_v=1.16.1
