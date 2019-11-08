@@ -1,9 +1,7 @@
 
-html2x Nginx module
-===================
+#html2x Nginx module
 
-Designed to generate PDF from HTML
-----------------------------------
+**Designed to generate PDF from HTML**
 
 *Example:*
 ```
