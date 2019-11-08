@@ -1,4 +1,6 @@
 
+import os
+
 flags = [
     '-Wall',
     '-Wextra',
@@ -9,6 +11,7 @@ flags = [
     '-I', 'vendor/wkhtmltopdf/src/lib',
     '-I', 'vendor/wkhtmltopdf/src/pdf',
     '-I', 'vendor/wkhtmltopdf/src/shared',
+    '-I', 'vendor/nginx/objs',
     '-I', 'vendor/nginx/src/core',
     '-I', 'vendor/nginx/src/event',
     '-I', 'vendor/nginx/src/event/modules',
@@ -20,23 +23,43 @@ flags = [
     '-I', 'vendor/nginx/src/misc',
     '-I', 'vendor/nginx/src/os/unix',
     '-I', 'vendor/nginx/src/stream',
-    '-I', 'vendor/nginx/objs',
     '-I', 'src',
-    # std is required
-    # clang won't know which language to use compiling headers
     '-isystem', '/usr/include',
-    '-std=c11',
-    # '-x' and 'c++' also required
-    # use 'c' for C projects
-    '-x', 'c',
 ]
- 
+
+flags_c = (
+    '-std=c11',
+    '-x', 'c',
+)
+
+flags_cpp = (
+    '-std=c++17',
+    '-x', 'c++',
+)
+
+ext_cpp = ('.cc', '.hh')
+
+
+def getFlags(filename):
+    file_ext = os.path.splitext(filename)
+    if len(file_ext) < 2:
+        flags.extend(flags_c)
+        return flags
+
+    ext = file_ext[1]
+    if ext in ext_cpp:
+        flags.extend(flags_cpp)
+        return flags
+
+    flags.extend(flags_c)
+    return flags
+
+
 # youcompleteme is calling this function to get flags
 # You can also set database for flags. Check: JSONCompilationDatabase.html in
 # clang-3.2-doc package
-def FlagsForFile(filename):
-  return {
-    'flags': flags,
-    'do_cache': True
-}
-
+def Settings(**kwargs):
+    return {
+        'flags': getFlags(kwargs['filename']),
+        'do_cache': True
+    }
