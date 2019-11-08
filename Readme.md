@@ -26,7 +26,7 @@ Service will be available as `http://127.0.0.1/html2pdf`
 
 ###### Build Tools
 
-`apt-get install -y wget build-essential`
+`apt-get install -y git wget build-essential`
 
 ###### Wkhtmltox Dependencies
 
@@ -58,8 +58,10 @@ dpkg -i wkhtmltox_0.12.5-1.${CODENAME}_amd64.deb
 
 ```sh
 export nginx_v=1.16.1
+export mod_pdf_path=/opt/mod_pdf
 export CPU_COUNT=$(grep -c processor /proc/cpuinfo)
 
+git clone https://github.com/undying/nginx-html2x-module ${mod_pdf_path}
 wget https://nginx.org/download/nginx-${nginx_v}.tar.gz
 
 tar -xf nginx-${nginx_v}.tar.gz
@@ -73,5 +75,4 @@ cd nginx-${nginx_v}
 make -j${CPU_COUNT}
 make install
 ```
-
 
