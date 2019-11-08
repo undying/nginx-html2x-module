@@ -40,13 +40,7 @@ flags_cpp = (
 ext_cpp = ('.cc', '.hh')
 
 
-def getFlags(filename):
-    file_ext = os.path.splitext(filename)
-    if len(file_ext) < 2:
-        flags.extend(flags_c)
-        return flags
-
-    ext = file_ext[1]
+def getFlags(ext):
     if ext in ext_cpp:
         flags.extend(flags_cpp)
         return flags
@@ -55,11 +49,18 @@ def getFlags(filename):
     return flags
 
 
+def getFileExt(filename=None):
+    file_ext = os.path.splitext(filename)
+    if len(file_ext) > 1:
+        return file_ext[1]
+    return '.c'
+
+
 # youcompleteme is calling this function to get flags
 # You can also set database for flags. Check: JSONCompilationDatabase.html in
 # clang-3.2-doc package
 def Settings(**kwargs):
     return {
-        'flags': getFlags(kwargs['filename']),
+        'flags': getFlags(getFileExt(kwargs['filename'])),
         'do_cache': True
     }
