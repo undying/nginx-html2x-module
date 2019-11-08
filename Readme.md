@@ -48,9 +48,7 @@ apt-get install -y \
 
 ```sh
 export CODENAME=$(awk -F'=' '/CODENAME/ {print $2;exit}' /etc/os-release)
-
 wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${CODENAME}_amd64.deb
-
 dpkg -i wkhtmltox_0.12.5-1.${CODENAME}_amd64.deb
 ```
 
@@ -58,19 +56,21 @@ dpkg -i wkhtmltox_0.12.5-1.${CODENAME}_amd64.deb
 
 ```sh
 export nginx_v=1.16.1
-export mod_pdf_path=/opt/mod_pdf
+export html2x_v=1.0.0
+export html2x_path=nginx-html2x-module-${html2x_v}
 export CPU_COUNT=$(grep -c processor /proc/cpuinfo)
 
-git clone https://github.com/undying/nginx-html2x-module ${mod_pdf_path}
+wget https://github.com/undying/nginx-html2x-module/archive/v${html2x_v}.tar.gz
 wget https://nginx.org/download/nginx-${nginx_v}.tar.gz
 
+tar -xf v${html2x_v}.tar.gz
 tar -xf nginx-${nginx_v}.tar.gz
 
 cd nginx-${nginx_v}
 
 ./configure \
   --with-ld-opt="-Wl,-rpath,/usr/local/lib" \
-  --add-module="${mod_pdf_path}"
+  --add-module="../${html2x_path}"
 
 make -j${CPU_COUNT}
 make install
