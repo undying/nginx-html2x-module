@@ -70,24 +70,6 @@ COPY lib ${mod_pdf_path}/lib
 COPY src ${mod_pdf_path}/src
 
 RUN set -x \
-  && cd ${mod_pdf_path}/src \
-  && gcc  \ 
-    -Wall -ansi -pedantic -ggdb -g \
-    html_to_pdf.c \
-    -o html_to_pdf \
-    -lwkhtmltox \
-    -Wl,-rpath,/usr/local/lib
-
-RUN set -x \
-  && cd ${mod_pdf_path}/src \
-  && gcc  \ 
-    -Wall --std=c11 -pedantic -ggdb -g \
-    html_to_pdf_test.c \
-    -o html_to_pdf_test \
-    -lwkhtmltox \
-    -Wl,-rpath,/usr/local/lib
-
-RUN set -x \
   && echo "building nginx" \
   && export CPU_COUNT=$(grep -c processor /proc/cpuinfo) \
   && cd /opt/nginx-${nginx_v} \
