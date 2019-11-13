@@ -8,6 +8,20 @@
 
 typedef struct {
   ngx_flag_t enable;
+  ngx_uint_t html2x_dpi;
+  ngx_uint_t html2x_image_dpi;
+  ngx_uint_t html2x_header_fontsize;
+
+  ngx_str_t html2x_web_default_encoding;
+  ngx_str_t html2x_margin_top;
+  ngx_str_t html2x_margin_right;
+  ngx_str_t html2x_margin_left;
+  ngx_str_t html2x_margin_bottom;
+  ngx_str_t html2x_size_page_size;
+  ngx_str_t html2x_header_center;
+
+  ngx_array_t *html2x_load_custom_headers;
+
   html2pdf_global_conf_t *html2pdf_global_conf;
 } ngx_http_html2x_loc_conf_t;
 
@@ -32,6 +46,94 @@ static ngx_command_t ngx_http_html2x_commands[] = {
     ngx_http_html2pdf,
     NGX_HTTP_LOC_CONF_OFFSET,
     0,
+    NULL
+  },
+  {
+    ngx_string("html2x_dpi"),
+    NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+    ngx_conf_set_num_slot,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    offsetof(ngx_http_html2x_loc_conf_t, html2x_dpi),
+    NULL
+  },
+  {
+    ngx_string("html2x_image_dpi"),
+    NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+    ngx_conf_set_num_slot,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    offsetof(ngx_http_html2x_loc_conf_t, html2x_image_dpi),
+    NULL
+  },
+  {
+    ngx_string("html2x_header_fontsize"),
+    NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+    ngx_conf_set_num_slot,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    offsetof(ngx_http_html2x_loc_conf_t, html2x_header_fontsize),
+    NULL
+  },
+  {
+    ngx_string("html2x_web_default_encoding"),
+    NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+    ngx_conf_set_str_slot,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    offsetof(ngx_http_html2x_loc_conf_t, html2x_web_default_encoding),
+    NULL
+  },
+  {
+    ngx_string("html2x_margin_top"),
+    NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+    ngx_conf_set_str_slot,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    offsetof(ngx_http_html2x_loc_conf_t, html2x_margin_top),
+    NULL
+  },
+  {
+    ngx_string("html2x_margin_right"),
+    NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+    ngx_conf_set_str_slot,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    offsetof(ngx_http_html2x_loc_conf_t, html2x_margin_right),
+    NULL
+  },
+  {
+    ngx_string("html2x_margin_bottom"),
+    NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+    ngx_conf_set_str_slot,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    offsetof(ngx_http_html2x_loc_conf_t, html2x_margin_bottom),
+    NULL
+  },
+  {
+    ngx_string("html2x_margin_left"),
+    NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+    ngx_conf_set_str_slot,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    offsetof(ngx_http_html2x_loc_conf_t, html2x_margin_left),
+    NULL
+  },
+  {
+    ngx_string("html2x_size_page_size"),
+    NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+    ngx_conf_set_str_slot,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    offsetof(ngx_http_html2x_loc_conf_t, html2x_size_page_size),
+    NULL
+  },
+  {
+    ngx_string("html2x_header_center"),
+    NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+    ngx_conf_set_str_slot,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    offsetof(ngx_http_html2x_loc_conf_t, html2x_header_center),
+    NULL
+  },
+  {
+    ngx_string("html2x_load_custom_headers"),
+    NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE2,
+    ngx_conf_set_keyval_slot,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    offsetof(ngx_http_html2x_loc_conf_t, html2x_load_custom_headers),
     NULL
   },
   ngx_null_command
@@ -204,7 +306,8 @@ ngx_http_html2pdf(ngx_conf_t *ngx_conf, ngx_command_t *ngx_command, void *conf){
 }
 
 
-static void * ngx_http_html2x_create_loc_conf(ngx_conf_t *ngx_conf)
+static void *
+ngx_http_html2x_create_loc_conf(ngx_conf_t *ngx_conf)
 {
   ngx_http_html2x_loc_conf_t *html2x_loc_conf;
   html2x_loc_conf = ngx_pcalloc(ngx_conf->pool, sizeof(ngx_http_html2x_loc_conf_t));
@@ -218,13 +321,21 @@ static void * ngx_http_html2x_create_loc_conf(ngx_conf_t *ngx_conf)
   }
 
   pdf_global_conf_init(html2x_loc_conf->html2pdf_global_conf);
+
   html2x_loc_conf->enable = NGX_CONF_UNSET;
+
+  html2x_loc_conf->html2x_dpi = NGX_CONF_UNSET_UINT;
+  html2x_loc_conf->html2x_image_dpi = NGX_CONF_UNSET_UINT;
+  html2x_loc_conf->html2x_header_fontsize = NGX_CONF_UNSET_UINT;
+
+  html2x_loc_conf->html2x_load_custom_headers = NULL;
 
   return html2x_loc_conf;
 }
 
 
-static char * ngx_http_html2x_merge_loc_conf(ngx_conf_t *ngx_conf, void *parent, void *child)
+static char *
+ngx_http_html2x_merge_loc_conf(ngx_conf_t *ngx_conf, void *parent, void *child)
 {
   //ngx_http_html2x_loc_conf_t *prev = parent;
   //ngx_http_html2x_loc_conf_t *conf = child;

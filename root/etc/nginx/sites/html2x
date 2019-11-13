@@ -4,6 +4,11 @@ server {
 
   location /html2pdf {
     html2pdf;
+
+    html2x_dpi 150;
+    html2x_web_default_encoding "UTF-8";
+    html2x_load_custom_headers "User-Agent" "html2x";
+    html2x_load_custom_headers "X-Who" "kron";
   }
 }
 
