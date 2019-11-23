@@ -3,50 +3,45 @@
 #include "stddef.h"
 
 
-void pdf_init(void)
+void h2p_wkhtmltopdf_init(void)
 {
   wkhtmltopdf_init(WKHTMLTOX_USE_GRAPHICS);
 }
 
 
-void pdf_deinit(){
+void h2p_wkhtmltopdf_deinit(){
   wkhtmltopdf_deinit();
 }
 
 
-void pdf_conf_init(html2pdf_global_conf_t *html2pdf_global_conf, html2pdf_conf_t *html2pdf_conf)
+void h2p_wkhtmltopdf_conf_init(h2p_wkhtmltopdf_conf_t *wkhtmltopdf_conf)
 {
-  html2pdf_conf->wk_os = wkhtmltopdf_create_object_settings();
-  html2pdf_conf->wk_c = wkhtmltopdf_create_converter(html2pdf_global_conf->wk_gs);
+  wkhtmltopdf_conf->wk_gs = wkhtmltopdf_create_global_settings();
+  wkhtmltopdf_conf->wk_os = wkhtmltopdf_create_object_settings();
+  wkhtmltopdf_conf->wk_c = wkhtmltopdf_create_converter(wkhtmltopdf_conf->wk_gs);
 }
 
 
-void pdf_global_conf_init(html2pdf_global_conf_t *html2pdf_global_conf){
-  html2pdf_global_conf->wk_gs = wkhtmltopdf_create_global_settings();
+void h2p_wkhtmltopdf_conf_deinit(h2p_wkhtmltopdf_conf_t *wkhtmltopdf_conf){
+  wkhtmltopdf_destroy_global_settings(wkhtmltopdf_conf->wk_gs);
+  wkhtmltopdf_destroy_object_settings(wkhtmltopdf_conf->wk_os);
+  wkhtmltopdf_destroy_converter(wkhtmltopdf_conf->wk_c);
 }
 
 
-void pdf_conf_deinit(html2pdf_conf_t *html2pdf_conf){
-  wkhtmltopdf_destroy_object_settings(html2pdf_conf->wk_os);
-  wkhtmltopdf_destroy_converter(html2pdf_conf->wk_c);
-}
-
-
-void pdf_object_add(html2pdf_conf_t *html2pdf_conf, char *html)
+void h2p_wkhtmltopdf_object_add(h2p_wkhtmltopdf_conf_t *wkhtmltopdf_conf, char *html)
 {
-  wkhtmltopdf_add_object(html2pdf_conf->wk_c, html2pdf_conf->wk_os, html);
+  wkhtmltopdf_add_object(wkhtmltopdf_conf->wk_c, wkhtmltopdf_conf->wk_os, html);
 }
 
 
-int pdf_convert(html2pdf_conf_t *html2pdf_conf, unsigned char **pdf){
+int h2p_wkhtmltopdf_convert(h2p_wkhtmltopdf_conf_t *wkhtmltopdf_conf, unsigned char **pdf){
   int rc;
 
-  rc = wkhtmltopdf_convert(html2pdf_conf->wk_c);
-  if(!rc)
-    return rc;
+  rc = wkhtmltopdf_convert(wkhtmltopdf_conf->wk_c);
+  if(!rc) return rc;
 
-  rc = wkhtmltopdf_get_output(html2pdf_conf->wk_c, (const unsigned char **)pdf);
-  return rc;
+  return wkhtmltopdf_get_output(wkhtmltopdf_conf->wk_c, (const unsigned char **)pdf);
 }
 
 

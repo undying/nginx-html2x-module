@@ -23,7 +23,12 @@ docker_exec:
 
 request:
 	rm -f /tmp/test.pdf
-	curl -o /tmp/test.pdf -vd "@html/nginx news.htm" -H 'Content-Type: text/html' 127.0.0.1/html2pdf
+	curl \
+		-o /tmp/test.pdf \
+		-vd "@html/nginx news.htm" \
+		-H 'Content-Type: text/html' \
+		"127.0.0.1/html2pdf?dpi=150"
+	xdg-open /tmp/test.pdf
 
 docker_logs:
 	docker exec -it $(DOCKER_NAME) tail -F /var/log/nginx/error.log
