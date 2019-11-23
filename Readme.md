@@ -76,3 +76,31 @@ make -j${CPU_COUNT}
 make install
 ```
 
+
+###### Nginx Configuration Example
+
+```sh
+server {
+  listen 80;
+
+  location /html2pdf {
+    html2pdf;
+
+    wkhtmltopdf_dpi $arg_dpi;
+    wkhtmltopdf_image_dpi $arg_image_dpi;
+
+    wkhtmltopdf_web_default_encoding $arg_default_encoding;
+
+    wkhtmltopdf_header_center $arg_header_center;
+    wkhtmltopdf_header_fontsize $arg_header_fontsize;
+
+    wkhtmltopdf_margin_top $arg_margin_top;
+    wkhtmltopdf_margin_right $arg_margin_right;
+    wkhtmltopdf_margin_bottom $arg_margin_bottom;
+    wkhtmltopdf_margin_left $arg_margin_left;
+
+    wkhtmltopdf_size_page_size $arg_page_size;
+  }
+}
+```
+
