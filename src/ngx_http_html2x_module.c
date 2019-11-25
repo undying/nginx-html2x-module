@@ -205,7 +205,7 @@ static void
 ngx_http_html2pdf_request_body(ngx_http_request_t *r)
 {
   int rc;
-  ngx_buf_t b = {0};
+  ngx_buf_t *b = NULL;
   ngx_chain_t *in, out = {0};
   unsigned char *bb = NULL;
   h2p_wkhtmltopdf_conf_t wkhtmltopdf_conf;
@@ -229,7 +229,7 @@ ngx_http_html2pdf_request_body(ngx_http_request_t *r)
       bb = ngx_palloc(r->pool, rc);
       if(!bb) goto alloc_error;
 
-      ngx_cpystrn(bb, in->buf->pos, rc);
+      ngx_memcpy(bb, in->buf->pos, rc);
     } else if(in->buf->in_file){
       rc = in->buf->file_last + 1;
       bb = ngx_palloc(r->pool, rc);
@@ -242,18 +242,26 @@ ngx_http_html2pdf_request_body(ngx_http_request_t *r)
     h2p_wkhtmltopdf_object_add(&wkhtmltopdf_conf, (char *)bb);
   }
 
-  rc = h2p_wkhtmltopdf_convert(&wkhtmltopdf_conf, &b.pos);
+  rc = h2p_wkhtmltopdf_convert(&wkhtmltopdf_conf, &bb);
   if(rc < 1){
     ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
         "unable to convert HTML to PDF");
     goto error;
   }
 
-  b.last = b.pos + rc;
-  b.memory = 1;
-  b.last_buf = 1;
+  b = ngx_pcalloc(r->pool, sizeof(ngx_buf_t));
+  if(!b) goto alloc_error;
 
-  out.buf = &b;
+  b->pos = ngx_palloc(r->pool, rc);
+  if(!b->pos) goto alloc_error;
+
+  ngx_memcpy(b->pos, bb, rc);
+
+  b->last = b->pos + rc + 1;
+  b->memory = 1;
+  b->last_buf = 1;
+
+  out.buf = b;
   out.next = NULL;
 
   r->headers_out.status = NGX_HTTP_OK;
@@ -416,7 +424,7 @@ ngx_http_html2pdf_wk_global_set(ngx_http_request_t *r, wkhtmltopdf_global_settin
 
   p = ngx_http_html2x_variable_value_get(r, value);
   if(!p){
-    ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+    ngx_log_error(NGX_LOG_INFO, r->connection->log, 0,
         "variable %s not found", value->data);
     return;
   }
@@ -437,7 +445,7 @@ ngx_http_html2pdf_wk_object_set(ngx_http_request_t *r, wkhtmltopdf_object_settin
 
   p = ngx_http_html2x_variable_value_get(r, value);
   if(!p){
-    ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+    ngx_log_error(NGX_LOG_INFO, r->connection->log, 0,
         "variable %s not found", value->data);
     return;
   }

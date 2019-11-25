@@ -38,7 +38,7 @@ ENV deps_runtime_wkhtmltopdf="\
   xfonts-base \
   "
 
-ENV nginx_v=1.16.1
+ENV nginx_v=1.17.6
 ENV wkhtmltopdf_v=0.12.5 wkhtmltopdf_deb_v=0.12.5-1
 
 RUN set -x \
