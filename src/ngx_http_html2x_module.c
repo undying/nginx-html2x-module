@@ -229,7 +229,7 @@ ngx_http_html2pdf_request_body(ngx_http_request_t *r)
       bb = ngx_palloc(r->pool, rc);
       if(!bb) goto alloc_error;
 
-      ngx_memcpy(bb, in->buf->pos, rc);
+      ngx_cpystrn(bb, in->buf->pos, rc);
     } else if(in->buf->in_file){
       rc = in->buf->file_last + 1;
       bb = ngx_palloc(r->pool, rc);
@@ -368,7 +368,7 @@ ngx_http_html2pdf_configure(ngx_http_request_t *r, ngx_http_html2x_loc_conf_t *h
 
   /* object settings */
   if(os->wkhtmltopdf_web_default_encoding.len){
-    ngx_http_html2pdf_wk_object_set(r, wk_os, "defaultEncoding", &os->wkhtmltopdf_web_default_encoding);
+    ngx_http_html2pdf_wk_object_set(r, wk_os, "web.defaultEncoding", &os->wkhtmltopdf_web_default_encoding);
   }
 
   if(os->wkhtmltopdf_header_center.len){
