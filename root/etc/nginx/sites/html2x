@@ -2,6 +2,8 @@
 server {
   listen 80;
 
+  client_body_buffer_size 1m;
+
   location /html2pdf {
     html2pdf;
 

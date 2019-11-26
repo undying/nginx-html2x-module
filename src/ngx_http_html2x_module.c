@@ -424,7 +424,7 @@ ngx_http_html2pdf_wk_global_set(ngx_http_request_t *r, wkhtmltopdf_global_settin
 
   p = ngx_http_html2x_variable_value_get(r, value);
   if(!p){
-    ngx_log_error(NGX_LOG_INFO, r->connection->log, 0,
+    ngx_log_error(NGX_LOG_DEBUG, r->connection->log, 0,
         "variable %s not found", value->data);
     return;
   }
@@ -445,7 +445,7 @@ ngx_http_html2pdf_wk_object_set(ngx_http_request_t *r, wkhtmltopdf_object_settin
 
   p = ngx_http_html2x_variable_value_get(r, value);
   if(!p){
-    ngx_log_error(NGX_LOG_INFO, r->connection->log, 0,
+    ngx_log_error(NGX_LOG_DEBUG, r->connection->log, 0,
         "variable %s not found", value->data);
     return;
   }
