@@ -3,12 +3,18 @@ ngx_addon_name=ngx_http_html2x_module
 
 HTML2X_INCS=""
 HTML2X_SRC="\
+  ${ngx_addon_dir}/src/ngx_http_html2x.c \
+  ${ngx_addon_dir}/src/ngx_http_html2pdf.c \
   ${ngx_addon_dir}/src/ngx_http_html2pdf_wkhtmltopdf.c \
   ${ngx_addon_dir}/src/ngx_http_html2x_module.c \
 "
-HTML2X_DEPS="${ngx_addon_dir}/src/ngx_http_html2pdf_wkhtmltopdf.h"
-HTML2X_LIBS="-lwkhtmltox"
+HTML2X_DEPS="\
+  ${ngx_addon_dir}/src/ngx_http_html2x.h \
+  ${ngx_addon_dir}/src/ngx_http_html2pdf.h \
+  ${ngx_addon_dir}/src/ngx_http_html2pdf_wkhtmltopdf.h \
+"
 
+HTML2X_LIBS="-lwkhtmltox"
 
 ngx_module_incs="${HTML2X_INCS}"
 ngx_module_libs="${HTML2X_LIBS}"

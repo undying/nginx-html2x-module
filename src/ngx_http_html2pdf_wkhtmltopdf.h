@@ -1,6 +1,6 @@
 
-#ifndef NGX_HTTP_PDF_WKHTMLTOPDF
-#define NGX_HTTP_PDF_WKHTMLTOPDF
+#ifndef NGX_HTTP_HTML2PDF_WKHTMLTOPDF_H
+#define NGX_HTTP_HTML2PDF_WKHTMLTOPDF_H
 
 #include <ngx_config.h>
 #include <ngx_core.h>
