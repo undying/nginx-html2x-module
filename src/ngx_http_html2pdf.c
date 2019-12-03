@@ -102,7 +102,7 @@ ngx_http_html2pdf_request_body(ngx_http_request_t *r)
 
   ngx_memcpy(b->pos, bb, rc);
 
-  b->last = b->pos + rc + 1;
+  b->last = b->pos + rc;
   b->memory = 1;
   b->last_buf = 1;
 
@@ -192,19 +192,28 @@ static void
 ngx_http_html2pdf_wk_global_set(ngx_http_request_t *r, wkhtmltopdf_global_settings *wk_gs, char *name, ngx_str_t *value)
 {
   unsigned char *p = NULL;
+  ngx_str_t *s;
 
   if(!HTML2X_IS_NGX_VARIABLE(value->data)){
     wkhtmltopdf_set_global_setting(wk_gs, (const char *)name, (const char *)value->data);
     return;
   }
 
-  p = ngx_http_html2x_variable_value_get(r, value);
-  if(!p){
+  s = ngx_http_html2x_variable_value_get(r, value);
+  if(!s){
     ngx_log_error(NGX_LOG_DEBUG, r->connection->log, 0,
         "variable %s not found", value->data);
     return;
   }
 
+  p = ngx_palloc(r->pool, s->len + 1);
+  if(!p){
+    ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+        "allocation failed", value->data);
+    return;
+  }
+
+  ngx_cpystrn(p, s->data, s->len + 1);
   wkhtmltopdf_set_global_setting(wk_gs, (const char *)name, (const char *)p);
 }
 
@@ -212,18 +221,35 @@ ngx_http_html2pdf_wk_global_set(ngx_http_request_t *r, wkhtmltopdf_global_settin
 static void
 ngx_http_html2pdf_wk_object_set(ngx_http_request_t *r, wkhtmltopdf_object_settings *wk_os, char *name, ngx_str_t *value)
 {
-  unsigned char *p = NULL;
+  unsigned char *b, *d, *p;
+  ngx_str_t *s;
 
   if(!HTML2X_IS_NGX_VARIABLE(value->data)){
     wkhtmltopdf_set_object_setting(wk_os, (const char *)name, (const char *)value->data);
     return;
   }
 
-  p = ngx_http_html2x_variable_value_get(r, value);
-  if(!p){
+  s = ngx_http_html2x_variable_value_get(r, value);
+  if(!s){
     ngx_log_error(NGX_LOG_DEBUG, r->connection->log, 0,
         "variable %s not found", value->data);
     return;
+  }
+
+  p = ngx_palloc(r->pool, s->len + 1);
+  if(!p){
+    ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+        "allocation failed");
+    return;
+  }
+
+  ngx_cpystrn(p, s->data, s->len + 1);
+
+  if(ngx_http_html2x_is_ngx_uri_arg(value)){
+    b = d = ngx_palloc(r->pool, s->len);
+    ngx_unescape_uri(&d, &p, s->len, NGX_UNESCAPE_URI);
+    p = b;
+    p[d - b] = '\0';
   }
 
   wkhtmltopdf_set_object_setting(wk_os, (const char *)name, (const char *)p);

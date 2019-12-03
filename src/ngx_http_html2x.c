@@ -9,6 +9,37 @@ static void * ngx_http_html2x_create_loc_conf(ngx_conf_t *ngx_conf);
 static char * ngx_http_html2x_merge_loc_conf(ngx_conf_t *ngx_conf, void *parent, void *child);
 
 
+ngx_int_t
+ngx_http_html2x_is_ngx_uri_arg(ngx_str_t *var)
+{
+  if(var->len < HTML2X_NGX_URI_ARG_LEN)
+    return 0;
+
+  if((ngx_rstrncmp((u_char *)HTML2X_NGX_URI_ARG_DATA, var->data, HTML2X_NGX_URI_ARG_LEN)) == 0)
+    return 1;
+  else
+    return 0;
+}
+
+
+ngx_str_t *
+ngx_http_html2x_variable_value_get(ngx_http_request_t *r, ngx_str_t *name)
+{
+  ngx_str_t *s = NULL;
+  ngx_http_variable_value_t *var;
+  var = ngx_http_html2x_get_variable(r, name);
+
+  if(!var) return NULL;
+  if(var->not_found) return NULL;
+
+  s = ngx_palloc(r->pool, sizeof(ngx_str_t));
+  s->data = var->data;
+  s->len = var->len;
+
+  return s;
+}
+
+
 static ngx_command_t ngx_http_html2x_commands[] = {
   { 
     ngx_string("html2pdf"), 
@@ -192,20 +223,4 @@ ngx_http_html2x_get_variable(ngx_http_request_t *r, ngx_str_t *name)
   return ngx_http_get_variable(r, &str, key);
 }
 
-
-unsigned char *
-ngx_http_html2x_variable_value_get(ngx_http_request_t *r, ngx_str_t *name)
-{
-  unsigned char *p = NULL;
-  ngx_http_variable_value_t *var;
-  var = ngx_http_html2x_get_variable(r, name);
-
-  if(!var) return NULL;
-  if(var->not_found) return NULL;
-
-  p = ngx_palloc(r->pool, var->len + 1);
-  ngx_cpystrn(p, var->data, var->len + 1);
-
-  return p;
-}
 
