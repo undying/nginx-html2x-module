@@ -9,7 +9,7 @@ curl \
   -o /tmp/hello.pdf \
   -vd "<html><body>Hello!</body></html>" \
   -H 'Content-Type: text/html' \
-  127.0.0.1/html2pdf
+  127.0.0.1/html2pdf?dpi=150
 ```
 
 ### How To
