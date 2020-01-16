@@ -49,7 +49,7 @@ ngx_http_html2pdf_handler(ngx_http_request_t *r)
 static void
 ngx_http_html2pdf_request_body(ngx_http_request_t *r)
 {
-  int rc;
+  int rc = 0, bytes_sum = 0;
   ngx_buf_t *b = NULL;
   ngx_chain_t *in, out = {0};
   unsigned char *bb = NULL;
@@ -61,6 +61,7 @@ ngx_http_html2pdf_request_body(ngx_http_request_t *r)
     goto error;
   }
 
+
   h2p_wkhtmltopdf_conf_init(&wkhtmltopdf_conf);
 
   ngx_http_html2x_loc_conf_t *html2x_loc_conf;
@@ -70,22 +71,28 @@ ngx_http_html2pdf_request_body(ngx_http_request_t *r)
 
   for(in = r->request_body->bufs; in; in = in->next){
     if(ngx_buf_in_memory(in->buf)){
-      rc = (in->buf->last - in->buf->pos) + 1;
-      bb = ngx_palloc(r->pool, rc);
-      if(!bb) goto alloc_error;
+      rc += (in->buf->last - in->buf->pos);
+    } else if(in->buf->in_file){
+      rc += in->buf->file_last;
+    }
+  }
 
-      ngx_cpystrn(bb, in->buf->pos, rc);
+  bb = ngx_palloc(r->pool, rc + 1);
+  if(!bb) goto alloc_error;
+
+  for(in = r->request_body->bufs; in; in = in->next){
+    if(ngx_buf_in_memory(in->buf)){
+      rc = (in->buf->last - in->buf->pos);
+      ngx_memcpy(bb + bytes_sum, in->buf->pos, rc);
     } else if(in->buf->in_file){
       rc = in->buf->file_last + 1;
-      bb = ngx_palloc(r->pool, rc);
-      if(!bb) goto alloc_error;
-
-      ngx_read_file(in->buf->file, bb, in->buf->file_last, in->buf->file_pos);
-      bb[in->buf->file_last] = '\0';
+      ngx_read_file(in->buf->file, bb + bytes_sum, in->buf->file_last, in->buf->file_pos);
     }
-
-    h2p_wkhtmltopdf_object_add(&wkhtmltopdf_conf, (char *)bb);
+    bytes_sum += rc;
   }
+
+  bb[bytes_sum] = '\0';
+  h2p_wkhtmltopdf_object_add(&wkhtmltopdf_conf, (char *)bb);
 
   rc = h2p_wkhtmltopdf_convert(&wkhtmltopdf_conf, &bb);
   if(rc < 1){
