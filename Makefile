@@ -1,4 +1,10 @@
 
+ifeq ($(ARGS),)
+	REQUEST_URI_ARGS := ?dpi=150
+else
+	REQUEST_URI_ARGS := $(ARGS)
+endif
+
 DOCKER_NAME=html2x
 
 docker_run: docker_build docker_stop docker_clean
@@ -27,7 +33,7 @@ request:
 		-o /tmp/test.pdf \
 		-vd "@html/nginx news.htm" \
 		-H 'Content-Type: text/html' \
-		"127.0.0.1/html2pdf?dpi=150"
+		"127.0.0.1/html2pdf$(REQUEST_URI_ARGS)"
 	xdg-open /tmp/test.pdf
 
 docker_logs:

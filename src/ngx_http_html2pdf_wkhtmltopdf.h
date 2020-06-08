@@ -23,6 +23,7 @@ typedef struct {
   ngx_str_t wkhtmltopdf_margin_left;
   ngx_str_t wkhtmltopdf_margin_bottom;
   ngx_str_t wkhtmltopdf_size_page_size;
+  ngx_str_t wkhtmltopdf_orientation;
 
   ngx_str_t wkhtmltopdf_dpi;
   ngx_str_t wkhtmltopdf_image_dpi;

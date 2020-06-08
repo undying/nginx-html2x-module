@@ -41,8 +41,8 @@ ngx_http_html2x_variable_value_get(ngx_http_request_t *r, ngx_str_t *name)
 
 
 static ngx_command_t ngx_http_html2x_commands[] = {
-  { 
-    ngx_string("html2pdf"), 
+  {
+    ngx_string("html2pdf"),
     NGX_HTTP_LOC_CONF|NGX_CONF_NOARGS,
     ngx_http_html2pdf,
     NGX_HTTP_LOC_CONF_OFFSET,
@@ -119,6 +119,14 @@ static ngx_command_t ngx_http_html2x_commands[] = {
     ngx_conf_set_str_slot,
     NGX_HTTP_LOC_CONF_OFFSET,
     offsetof(ngx_http_html2x_loc_conf_t, wk_gs.wkhtmltopdf_size_page_size),
+    NULL
+  },
+  {
+    ngx_string("wkhtmltopdf_orientation"),
+    NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+    ngx_conf_set_str_slot,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    offsetof(ngx_http_html2x_loc_conf_t, wk_gs.wkhtmltopdf_orientation),
     NULL
   },
   {

@@ -21,8 +21,10 @@ server {
     wkhtmltopdf_margin_left $arg_margin_left;
 
     wkhtmltopdf_size_page_size $arg_page_size;
+    wkhtmltopdf_orientation $arg_orientation;
 
     wkhtmltopdf_load_custom_headers "User-Agent" $http_user_agent;
   }
 }
 
+# vi:syntax=nginx

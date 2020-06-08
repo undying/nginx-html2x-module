@@ -179,6 +179,10 @@ ngx_http_html2pdf_configure(ngx_http_request_t *r, ngx_http_html2x_loc_conf_t *h
     ngx_http_html2pdf_wk_global_set(r, wk_gs, "imageDPI", &gs->wkhtmltopdf_image_dpi);
   }
 
+  if(gs->wkhtmltopdf_orientation.len){
+    ngx_http_html2pdf_wk_global_set(r, wk_gs, "orientation", &gs->wkhtmltopdf_orientation);
+  }
+
 
   /* object settings */
   if(os->wkhtmltopdf_web_default_encoding.len){
