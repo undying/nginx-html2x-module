@@ -100,6 +100,7 @@ server {
     wkhtmltopdf_margin_left $arg_margin_left;
 
     wkhtmltopdf_size_page_size $arg_page_size;
+    wkhtmltopdf_orientation $arg_orientation;
   }
 }
 ```
