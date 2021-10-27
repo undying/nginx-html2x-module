@@ -39,7 +39,7 @@ ENV deps_runtime_wkhtmltopdf="\
   "
 
 ENV nginx_v=1.17.6
-ENV wkhtmltopdf_v=0.12.5 wkhtmltopdf_deb_v=0.12.5-1
+ENV wkhtmltopdf_v=0.12.6 wkhtmltopdf_deb_v=0.12.6-1
 
 RUN set -x \
   && apt-get update \
@@ -56,7 +56,7 @@ RUN set -x \
   && export CODENAME=$(awk -F'=' '/CODENAME/ {print $2;exit}' /etc/os-release) \
   && cd /opt/ \
   && printf "\
-    https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/${wkhtmltopdf_v}/wkhtmltox_${wkhtmltopdf_deb_v}.${CODENAME}_amd64.deb\n \
+    https://github.com/wkhtmltopdf/packaging/releases/download/${wkhtmltopdf_deb_v}/wkhtmltox_${wkhtmltopdf_deb_v}.bionic_amd64.deb\n \
     https://nginx.org/download/nginx-${nginx_v}.tar.gz" \
     |xargs -L1 -P${CPU_COUNT} -I{} wget --quiet {} \
   && ls *.gz|xargs -L1 -P${CPU_COUNT} -I{} tar -xzf {} \
